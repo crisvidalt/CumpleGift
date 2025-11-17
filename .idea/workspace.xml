@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b95f8ae3-68c1-4120-8bd9-01429df58ed3" name="Changes" comment="change structre 2">
-      <change afterPath="$PROJECT_DIR$/favicon.ico" afterDir="false" />
+    <list default="true" id="b95f8ae3-68c1-4120-8bd9-01429df58ed3" name="Changes" comment="add favicon">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
@@ -69,7 +68,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763345051571</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="add favicon">
+      <option name="closed" value="true" />
+      <created>1763381249895</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1763381249896</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -87,6 +94,7 @@
     <MESSAGE value="first" />
     <MESSAGE value="change structre" />
     <MESSAGE value="change structre 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="change structre 2" />
+    <MESSAGE value="add favicon" />
+    <option name="LAST_COMMIT_MESSAGE" value="add favicon" />
   </component>
 </project>

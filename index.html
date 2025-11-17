@@ -846,18 +846,21 @@
     function init() {
         try {
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            // Ya no establecemos el tamaño aquí, lo hará onWindowResize
             renderer.setPixelRatio(window.devicePixelRatio);
 
             sceneBG = new THREE.Scene();
             cameraBG = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+            // <-- CAMBIO CLAVE 1: Inicializamos el Vector2 vacío. Se llenará en onWindowResize.
+            const initialResolution = new THREE.Vector2();
 
             fireworksMaterial = new THREE.ShaderMaterial({
                 vertexShader: fireworksVertexShader,
                 fragmentShader: fireworksFragmentShader,
                 uniforms: {
                     time: { value: 0.0 },
-                    iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                    iResolution: { value: initialResolution }
                 },
                 transparent: true,
                 depthWrite: false
@@ -868,8 +871,13 @@
             sceneBG.add(quad);
 
             window.addEventListener('resize', onWindowResize);
+
+            // <-- CAMBIO CLAVE 2: Llamamos a onWindowResize una vez al inicio para establecer los tamaños correctos.
+            onWindowResize();
+
             animate();
-        } catch (error) {
+        } catch (error)
+        {
             console.error("Error al inicializar Three.js:", error);
             const content = document.querySelector('.scroll-page');
             if(content) content.innerHTML = `<h1 class='text-2xl text-red-500'>Error al cargar la animación.</h1><p class='text-lg'>Es posible que tu navegador no sea compatible o haya un problema de red.</p>`;
@@ -878,9 +886,16 @@
 
     function onWindowResize() {
         if (renderer && fireworksMaterial) {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            // El canvas es 'fixed', por lo que siempre debe llenar la ventana
-            fireworksMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const dpr = window.devicePixelRatio;
+
+            // Actualizamos el tamaño del renderer en píxeles lógicos (CSS)
+            renderer.setSize(width, height);
+
+            // <-- CAMBIO CLAVE 3: Actualizamos el uniform 'iResolution' con los píxeles FÍSICOS.
+            // Esto le dice al shader la resolución real del lienzo.
+            fireworksMaterial.uniforms.iResolution.value.set(width * dpr, height * dpr);
         }
     }
 
@@ -1176,15 +1191,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
