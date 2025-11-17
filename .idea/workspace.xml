@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b95f8ae3-68c1-4120-8bd9-01429df58ed3" name="Changes" comment="first" />
+    <list default="true" id="b95f8ae3-68c1-4120-8bd9-01429df58ed3" name="Changes" comment="change structre 2">
+      <change afterPath="$PROJECT_DIR$/favicon.ico" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,6 +17,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "crisvidalt"
+  }
+}]]></component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/crisvidalt/CumpleGift.git",
@@ -29,6 +39,11 @@
     "nodejs_package_manager_path": "npm"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\cristobal.tapia\OneDrive\2025 Code\Webpau\webpau" />
+    </key>
+  </component>
   <component name="TaskManager">
     <task id="LOCAL-00001" summary="first">
       <option name="closed" value="true" />
@@ -38,7 +53,23 @@
       <option name="project" value="LOCAL" />
       <updated>1763344820575</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="change structre">
+      <option name="closed" value="true" />
+      <created>1763344996152</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1763344996152</updated>
+    </task>
+    <task id="LOCAL-00003" summary="change structre 2">
+      <option name="closed" value="true" />
+      <created>1763345051571</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1763345051571</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -54,6 +85,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first" />
-    <option name="LAST_COMMIT_MESSAGE" value="first" />
+    <MESSAGE value="change structre" />
+    <MESSAGE value="change structre 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="change structre 2" />
   </component>
 </project>
