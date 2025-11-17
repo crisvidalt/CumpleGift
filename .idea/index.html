@@ -1,0 +1,1189 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Un día muy Especial!</title>
+    <!-- Carga de Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fuentes de Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Antic+Slab&family=BBH+Sans+Bartle&family=Michroma&family=Tilt+Warp&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <!-- Import Model Viewer -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+
+    <style>
+        /* Estilo para el fondo negro y el color de texto rosa pastel */
+        body {
+            background-color: #000000;
+            color: #fbcfe8; /* Rosa pastel (pink-200) */
+            font-family: 'Antic Slab', serif; /* Tipografía base cambiada */
+            /* overflow: hidden; quitado para permitir scroll */
+        }
+
+        /* Lienzo de Three.js que ocupa toda la pantalla y es FIJO */
+        #bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Contenedor principal para el contenido que se desliza */
+        #scroll-container {
+            position: relative;
+            z-index: 10; /* Se asegura que el texto esté sobre el canvas */
+        }
+
+        /* Cada sección de texto ocupa una pantalla completa */
+        .scroll-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            /* Sombra de texto sutil para legibilidad */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+
+            /* Configuración para la animación de desvanecimiento */
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+
+            /* Aseguramos que el contenido de la página ocupe todo el espacio si es necesario */
+            width: 100%;
+            position: relative;
+        }
+
+        /* Clase que se añade con JS cuando la sección está visible */
+        .scroll-page.visible {
+            opacity: 1;
+        }
+
+        /* Tipografía para Títulos */
+        .scroll-page h1, .scroll-page h2 {
+            font-family: 'Michroma', sans-serif;
+        }
+
+        /* --- Animación de Máquina de Escribir (Solo primera página) --- */
+        .typewriter {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: .15em solid #fbcfe8;
+            letter-spacing: .1em;
+            animation:
+                    typing 3.5s steps(40, end),
+                    blink-caret .75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #fbcfe8; }
+        }
+
+        #typewriter-p {
+            border-right: none;
+            width: 0;
+            opacity: 0;
+            animation:
+                    typing 3s steps(30, end) 3.7s forwards,
+                    fadeIn 0.1s 3.7s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* --- Animación de aparición para las OTRAS páginas --- */
+        .fade-in-text {
+            opacity: 0;
+            transform: translateY(30px);
+            /* Retraso para que aparezca después de que la página sea visible */
+            transition: opacity 0.8s ease-out 0.4s, transform 0.8s ease-out 0.4s;
+        }
+
+        .scroll-page.visible .fade-in-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- INICIO: ESTILOS AÑADIDOS DE INDEX2.HTML --- */
+
+        /* Estilo para el título sobre la imagen (Michroma) */
+        .gallery-title-text {
+            font-family: 'Michroma', sans-serif;
+            font-size: 2.25rem; /* text-4xl */
+            line-height: 1.2;
+            color: white; /* Título blanco */
+            /* Sombra de texto sutil para legibilidad (se mantiene) */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Estilo para la descripción sobre la imagen (Antic Slab) */
+        .gallery-description-text {
+            font-family: 'Antic Slab', serif;
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.5;
+            margin-top: 0.5rem; /* Espacio entre título y descripción */
+            text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.7); /* Sombra de texto sutil */
+            color: white; /* Texto blanco */
+        }
+
+        /* Estilo base para las diapositivas (slides) */
+        .slide {
+            /* Transición suave para el fundido (fade) */
+            transition: opacity 0.7s ease-in-out;
+        }
+
+        /* --- FIN: ESTILOS AÑADIDOS DE INDEX2.HTML --- */
+
+        /* --- INICIO: ESTILOS NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- */
+        .scroll-page-paper {
+            /* Fondo de la página de scroll */
+
+            color: #ffffff; /* Texto oscuro */
+            font-family: 'Antic Slab', monospace; /* Fuente de máquina de escribir */
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Para que el papel no se salga */
+        }
+
+        .paper-content {
+            /*background: #ffa5b4;*/
+            width: 90%;
+            max-width: 800px;
+            height: 80vh; /* Alto del papel */
+            padding: 2.5rem 3rem; /* Padding interno del papel */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+            text-align: left;
+            overflow-y: auto; /* Scroll si el texto es muy largo */
+            line-height: 1.8;
+            font-size: 1.1rem; /* Tamaño de fuente legible */
+            opacity: 0; /* Oculto hasta que la página sea visible */
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out 0.4s, transform 0.8s ease-out 0.4s;
+        }
+
+        /* Cuando la página es visible, el papel aparece */
+        .scroll-page.visible .paper-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* El texto se alinea a la izquierda, con un cursor */
+        /* ID cambiado a CLASE */
+        .paper-text-target {
+            white-space: pre-wrap; /* Respeta saltos de línea y espacios */
+            word-wrap: break-word; /* Rompe palabras largas */
+        }
+
+        /* Cursor parpadeante */
+        .typing-cursor {
+            display: inline-block;
+            width: 10px; /* Ancho del cursor */
+            height: 1.2rem; /* Alto del cursor */
+            background-color: #333;
+            margin-left: 2px;
+            animation: blink-caret-paper .75s step-end infinite;
+        }
+
+        @keyframes blink-caret-paper {
+            from, to { background-color: transparent }
+            50% { background-color: #ffffff; }
+        }
+
+        /* Contenedor del texto original (oculto) */
+        /* ID cambiado a CLASE */
+        .paper-text-source {
+            display: none;
+        }
+        /* --- FIN: ESTILOS NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- */
+
+        /* --- INICIO: ESTILOS CONTROL DE MÚSICA --- */
+
+        /* Keyframes para la animación del borde */
+        @keyframes rgb-border-glow {
+            0%   { border-color: #ff0000; box-shadow: 0 0 8px #ff0000; } /* Red */
+            25%  { border-color: #79b7ff; box-shadow: 0 0 12px #59c6ff; } /* Green */
+            50%  { border-color: #0000ff; box-shadow: 0 0 8px #7b7bf3; } /* Blue */
+            75%  { border-color: #ffb8ff; box-shadow: 0 0 12px #ff00ff; } /* Magenta */
+            100% { border-color: #ff0000; box-shadow: 0 0 8px #ff0000; } /* Back to Red */
+        }
+
+        #music-control {
+            position: fixed;
+            top: 1.5rem; /* 24px */
+            right: 1.5rem; /* 24px */
+            z-index: 1000; /* Encima de todo */
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            /* border: 1px solid rgba(255, 255, 255, 0.2); <-- Reemplazado */
+            border-width: 2px; /* Borde más grueso para que se note */
+            border-style: solid;
+            border-radius: 50%;
+            width: 3rem; /* 48px */
+            height: 3rem; /* 48px */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #fbcfe8; /* Rosa pastel, como el texto */
+            opacity: 0.6;
+            transition: opacity 0.3s, transform 0.3s;
+            /* Aplicamos la animación */
+            animation: rgb-border-glow 3s linear infinite;
+        }
+        #music-control:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            animation-play-state: paused; /* Pausa la animación al pasar el mouse */
+        }
+        /* Oculta el icono que no corresponde al estado */
+        #music-control.muted #icon-volume-on {
+            display: none;
+        }
+        #music-control:not(.muted) #icon-volume-off {
+            display: none;
+        }
+        /* --- FIN: ESTILOS CONTROL DE MÚSICA --- */
+
+
+    </style>
+
+    <!-- Import map para Three.js y sus módulos (JSM) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body class="bg-black text-pink-200">
+
+
+<!-- --- INICIO: ELEMENTOS DE MÚSICA --- -->
+<!-- Elemento de Audio (Música de fondo) - loop quitado -->
+<audio id="bg-music">
+    <source src="https://crisvidalt.github.io/Pictures/Calvin%20Harris%20-%20Flashback.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+</audio>
+
+<!-- Elemento de Audio (Fuegos artificiales) - loop añadido -->
+<audio id="fireworks-audio" loop>
+    <source src="https://crisvidalt.github.io/Pictures/fireworkseffects_mixdown2.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Botón de Control de Múslca. Empieza 'muted' por defecto -->
+<div id="music-control" class="muted" title="Activar/Desactivar Música">
+    <!-- Icono Volumen ON (Se muestra cuando NO está muted) -->
+    <svg id="icon-volume-on" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+    </svg>
+    <!-- Icono Volumen OFF (Se muestra cuando SÍ está muted) -->
+    <svg id="icon-volume-off" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l-5-5m0 5l5-5" />
+    </svg>
+</div>
+<!-- --- FIN: ELEMENTOS DE MÚSICA --- -->
+
+
+<!-- Lienzo para la escena 3D (Fijo) --><canvas id="bg"></canvas>
+
+<!-- Contenedor de Scroll (Relativo) --><div id="scroll-container">
+
+    <!-- Página 1: Máquina de Escribir -->
+    <section class="scroll-page">
+        <h1 id="typewriter-h1" class="typewriter text-4xl md:text-6xl font-bold mb-4">UUUuuOuuu</h1>
+        <p id="typewriter-p" class="text-lg md:text-2xl">
+            Esto está hecho especialmente para ti. Activa el botón de audio!
+        </p>
+        <p class="text-sm mt-16 animate-pulse">(Desliza hacia abajo)</p>
+    </section>
+
+    <!-- Página 2: Nuevo Texto con Fade -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4">Bienvenida</h2>
+        <p class="fade-in-text text-lg md:text-2xl" style="transition-delay: 0.8s;">
+            a este pequeño presente
+        </p>
+        <img src="https://crisvidalt.github.io/Pictures/weje.png" width="400px">
+    </section>
+
+    <!-- --- INICIO: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+    <!-- ID 'writing-section' cambiado a CLASE 'writing-section' -->
+    <section class="scroll-page scroll-page-paper writing-section">
+        <!-- El 'paper-content' es el div que simula la hoja -->
+        <div class="paper-content">
+            <!-- Este es el contenedor donde se escribirá el texto -->
+            <!-- ID 'paper-text-target' cambiado a CLASE 'paper-text-target' -->
+            <p class="paper-text-target"></p>
+
+            <!--
+              Este div contiene el texto original.
+              Está oculto y se usa como fuente para el script.
+              ¡Puedes editar el texto aquí!
+            -->
+            <!-- ID 'paper-text-source' cambiado a CLASE 'paper-text-source' -->
+            <div class="paper-text-source">Te preguntarás ¿Qué estoy viendo??!
+
+                Bueno, lo que estás viendo es el resultado luego de mucha ideación, creatividad y sobre todo mucho mucho cariño 💖.
+
+                Es una manera diferente de hacerte sentir querida y especial en un día muy importante para ti y para los que te consideramos y queremos montón...
+            </div>
+
+        </div>
+        <p class="text-sm mt-16 animate-pulse">(Desliza hacia abajo)</p>
+    </section>
+    <!-- --- FIN: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+
+
+    <!-- Página 3: Nuevo Texto con Fade -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4">Felicidades🥇</h2>
+        <p class="fade-in-text text-lg md:text-2xl" style="transition-delay: 0.8s;">
+            Es lo primero que te quiero decir
+        </p>
+    </section>
+
+
+    <!-- --- INICIO: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+    <!-- ID 'writing-section' cambiado a CLASE 'writing-section' -->
+    <section class="scroll-page scroll-page-paper writing-section">
+        <!-- El 'paper-content' es el div que simula la hoja -->
+        <div class="paper-content">
+            <!-- Este es el contenedor donde se escribirá el texto -->
+            <!-- ID 'paper-text-target' cambiado a CLASE 'paper-text-target' -->
+            <p class="paper-text-target"></p>
+
+            <!--
+              Este div contiene el texto original.
+              Está oculto y se usa como fuente para el script.
+              ¡Puedes editar el texto aquí!
+            -->
+            <!-- ID 'paper-text-source' cambiado a CLASE 'paper-text-source' -->
+            <div class="paper-text-source">
+                Haz avanzado un montón en tu proyecto y me alegra enormemente ver que lo estás consiguiendo cada vez más. Espero que todo siga fluyendo de la mejor manera para ti, que puedas disfrutar aún más de tu tiempo, de tus logros, de tus añoranzas.
+
+                No ha sido un año sencillo, pero tampoco ha sido egoísta, deseo y espero con mucha seguridad que estos 31 sean para ti de mayores éxitos, de tranquilidad, que marquen el inicio de mirar hacia el futuro con más ganas que nunca porque tienes mucho para dar.
+
+                El tiempo no pasa en vano, sé que muchas veces lo hemos conversado y no tengo duda alguna de que con tu ímpetu lograrás todos esos deseos y sueños que persigues con fuerza, esas mismas fuerzas que te hacen solucionar donde y cuando en ocasiones no sabes cómo, que te hacen avanzar a pesar de lo inseguro que pinta la cosa y que traen para ti indiscutiblemente las mejores enseñanzas que despliegas continuamente en tu forma de ser.
+
+                Eso siempre me ha resonado de tu persona.
+            </div>
+
+        </div>
+        <p class="text-sm mt-16 animate-pulse">(Desliza hacia abajo)</p>
+    </section>
+    <!-- --- FIN: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+
+    <!-- --- INICIO: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+    <!-- ID 'writing-section' cambiado a CLASE 'writing-section' -->
+    <section class="scroll-page scroll-page-paper writing-section">
+        <!-- El 'paper-content' es el div que simula la hoja -->
+        <div class="paper-content">
+            <!-- Este es el contenedor donde se escribirá el texto -->
+            <!-- ID 'paper-text-target' cambiado a CLASE 'paper-text-target' -->
+            <p class="paper-text-target"></p>
+
+            <!--
+              Este div contiene el texto original.
+              Está oculto y se usa como fuente para el script.
+              ¡Puedes editar el texto aquí!
+            -->
+            <!-- ID 'paper-text-source' cambiado a CLASE 'paper-text-source' -->
+            <div class="paper-text-source">
+                Felicidades también por todo tu esfuerzo, por toda tu dedicación y ganas de tirar para arriba siempre, por no conformarte y pelear por lo que sientes y sabes que te mereces.
+
+                Por lo lejos que te encuentras hoy en términos de tu avance personal y profesional, y sé que no ha sido fácil en muchos aspectos. No hablo solo de ahora, me refiero a todo lo que ha sido tu camino que te ha llevado en una serie de tomas de decisiones donde los trade offs han sido varios para converger finalmente donde te encuentras hoy. Y hoy celebramos la linda, honesta, valiente, dedicada, preocupada, perseverante e inteligente mujer que eres. Sé también que quienes te conocen realmente saben que eso es sola una parte de todo lo que puede mencionarse al pensar en ti, y que has plasmado eso y mucho más en sus vidas.
+
+                Quiero que sepas que me siento feliz de haberte conocido, de haber aprendido a quererte y de haber compartido contigo todo aquello que se nos permitió.
+            </div>
+
+        </div>
+        <p class="text-sm mt-16 animate-pulse">(Desliza hacia abajo)</p>
+    </section>
+    <!-- --- FIN: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+
+    <!-- --- INICIO: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+    <!-- ID 'writing-section' cambiado a CLASE 'writing-section' -->
+    <section class="scroll-page scroll-page-paper writing-section">
+        <!-- El 'paper-content' es el div que simula la hoja -->
+        <div class="paper-content">
+            <!-- Este es el contenedor donde se escribirá el texto -->
+            <!-- ID 'paper-text-target' cambiado a CLASE 'paper-text-target' -->
+            <p class="paper-text-target"></p>
+
+            <!--
+              Este div contiene el texto original.
+              Está oculto y se usa como fuente para el script.
+              ¡Puedes editar el texto aquí!
+            -->
+            <!-- ID 'paper-text-source' cambiado a CLASE 'paper-text-source' -->
+            <div class="paper-text-source">
+                Quiero agradecerte especialmente por compartir conmigo todo lo que fue una increíble experiencia de nunca olvidar,
+
+                Por todos los detalles, el amazing pack de bienvenida que hasta un espanta osos y coyotes tenía, por tu tiempo, plan preparar todas esas cosas las rutas trámites tu casa impecable y cuántas más, por tu dedicación por tu preocupación en cada cosa incluso para que no me perdiera mucho de mi dieta, por tu amabilidad y por tu paciencia. Por pensar en las cosas que yo no había contemplado para que todo saliera bien y me sintiera lo más cómodo y tranquilo posible.
+
+                Por compartirme tu tiempo, tu refri para guardar poyuyios, por esperarme con paciencia cuando me tardaba, por enseñarme los tomatitos con webito 🍳🍅 Por no dejarme solo en el aeropuerto cuando perfectamente pude ser abandonado.
+
+                La verdad me sorprendiste en muchas maneras. En particular esa escena de ti esperando los que veníamos llegando vistiendo tu enterito y con una botella de agua en la mano fue amazing, jamás la podré olvidar. Mencionar que te veías muy linda, cómo siempre, pero el mero hecho de estar ahí y verte fue lo máximo.
+            </div>
+
+        </div>
+        <p class="text-sm mt-16 animate-pulse">(Desliza hacia abajo)</p>
+    </section>
+
+
+    <!-- --- FIN: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+
+    <!-- --- INICIO: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+    <!-- ID 'writing-section' cambiado a CLASE 'writing-section' -->
+    <section class="scroll-page scroll-page-paper writing-section">
+        <!-- El 'paper-content' es el div que simula la hoja -->
+        <div class="paper-content">
+            <!-- Este es el contenedor donde se escribirá el texto -->
+            <!-- ID 'paper-text-target' cambiado a CLASE 'paper-text-target' -->
+            <p class="paper-text-target"></p>
+
+            <!--
+              Este div contiene el texto original.
+              Está oculto y se usa como fuente para el script.
+              ¡Puedes editar el texto aquí!
+            -->
+            <!-- ID 'paper-text-source' cambiado a CLASE 'paper-text-source' -->
+            <div class="paper-text-source">
+                Por todos tus buenos consejos, por tus miradas de hey no saques más fotos, por tus risas contagiosas, por los retos, por permitirme conocerte un poco más,
+
+                Por las conversaciones largas, por todas esas noches, tardes y mañanas,
+
+                Por absolutamente todos tus cariños sinceros.
+            </div>
+
+        </div>
+        <p class="text-sm mt-16 animate-pulse">(Desliza hacia abajo)</p>
+    </section>
+
+    <!-- Página X: Modelo 3D -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4">Volvamos en el Tiempo</h2>
+
+        <!-- Visor de Modelo 3D -->
+        <model-viewer
+                src="https://crisvidalt.github.io/Pictures/timeturner.glb"
+                alt="Un modelo 3D de Cacheton"
+                shadow-intensity="1"
+                camera-controls
+                auto-rotate
+                touch-action="pan-y"
+                style="width: 300px; height: 400px; max-width: 80vw; border: none; background-color: transparent;"
+                class="fade-in-text"
+                style="transition-delay: 0.8s;">
+        </model-viewer>
+
+        <p class="fade-in-text text-lg md:text-2xl"> <!-- Texto corregido/añadido -->
+            Me tuve que conseguir el Time Turner
+        </p>
+        <p class="fade-in-text text-lg md:text-2xl"> <!-- Texto corregido/añadido -->
+            Para recordarte algunas cosas.
+        </p>
+
+    </section>
+
+
+    <!--
+     --- INICIO: SECCIÓN DE GALERÍA AÑADIDA ---
+     Esta es la nueva sección. Es un 'scroll-page' que contiene
+     la galería completa de index2.html.
+     Le he quitado el padding (p-0) para que ocupe toda la pantalla.
+   -->
+    <section class="scroll-page p-0">
+        <!--
+          Contenedor principal de la galería.
+          'group' de Tailwind se usa para mostrar/ocultar los controles
+          cuando se hace hover sobre este contenedor.
+          Añadido 'h-full w-full' para que llene el 'scroll-page'.
+        -->
+        <div id="gallery-container" class="relative h-full w-full group">
+
+            <!-- --- Diapositiva 1 --- -->
+            <!-- La primera diapositiva tiene 'opacity-100' para ser visible por defecto -->
+            <div class="slide absolute inset-0 w-full h-full opacity-100">
+                <!--
+                  La imagen usa 'object-cover' para llenar toda la pantalla
+                  sin distorsionarse, recortando si es necesario.
+                -->
+                <img src="https://raw.githubusercontent.com/crisvidalt/Pictures/36db992dd19f074708a42e3ae302fbf9774499e7/_DSC4742.png"
+                     alt="Fotografía de una persona en la costa rocosa"
+                     class="w-full h-full object-cover">
+
+                <!--
+                  Contenedor del texto (título y descripción).
+                -->
+                <div class="absolute z-10 bottom-1/4 left-8 md:left-16 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-3/4 md:w-1/2">
+                    <p class="gallery-title-text"></p>
+                    <p class="gallery-description-text">Que no importa donde te encuentres siempre podrás lograr lo que te propongas.</p>
+                </div>
+            </div>
+
+            <!-- --- Diapositiva 2 --- -->
+            <!-- Las otras diapositivas empiezan ocultas ('opacity-0') -->
+            <div class="slide absolute inset-0 w-full h-full opacity-0">
+                <img src="https://raw.githubusercontent.com/crisvidalt/Pictures/c44ab258579ec7f938f49347d265c4caa93fe0fa/_DSC4783.png"
+                     alt="Fotografía de marcador de posición urbana"
+                     class="w-full h-full object-cover">
+
+                <div class="absolute z-10 bottom-1/4 left-8 md:left-16 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-3/4 md:w-1/2">
+                    <p class="gallery-title-text"></p>
+                    <p class="gallery-description-text">Que no importa lo lejos, siempre te acompañarán aquellos que te valoran.</p>
+                </div>
+            </div>
+
+            <!-- --- Diapositiva 3 --- -->
+            <div class="slide absolute inset-0 w-full h-full opacity-0">
+                <img src="https://raw.githubusercontent.com/crisvidalt/Pictures/e7f05584f4a581c1adb2db04eeb73f4c3d1620f0/_DSC4974.png"
+                     alt="Fotografía de marcador de posición minimalista"
+                     class="w-full h-full object-cover">
+
+                <div class="absolute z-10 bottom-1/4 left-8 md:left-16 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-3/4 md:w-1/2">
+                    <p class="gallery-title-text"></p>
+                    <p class="gallery-description-text">Que tu sonrisa siempre será un agrado para quienes puedan verla.</p>
+                </div>
+            </div>
+
+            <!-- --- Diapositiva 4 --- -->
+            <div class="slide absolute inset-0 w-full h-full opacity-0">
+                <img src="https://raw.githubusercontent.com/crisvidalt/Pictures/c44ab258579ec7f938f49347d265c4caa93fe0fa/_DSC4988.png"
+                     alt="Fotografía de marcador de posición minimalista"
+                     class="w-full h-full object-cover">
+
+                <div class="absolute z-10 bottom-1/4 left-8 md:left-16 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-3/4 md:w-1/2">
+                    <p class="gallery-title-text"></p>
+                    <p class="gallery-description-text">Que al parecer las fotos si te vienen más de lo que crees.</p>
+                </div>
+            </div>
+
+            <!-- --- Diapositiva 5 --- -->
+            <div class="slide absolute inset-0 w-full h-full opacity-0">
+                <img src="https://raw.githubusercontent.com/crisvidalt/Pictures/4e0c8cb9e84a345e72fbbc92896454804e590da3/_DSC5342.png"
+                     alt="Fotografía de marcador de posición minimalista"
+                     class="w-full h-full object-cover">
+
+                <div class="absolute z-10 bottom-1/4 left-8 md:left-16 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-3/4 md:w-1/2">
+                    <p class="gallery-title-text"></p>
+                    <p class="gallery-description-text">Y que siempre recordaré esta ciudad como tú me la enseñaste.</p>
+                </div>
+            </div>
+
+
+            <!-- --- Controles de Navegación --- -->
+            <!-- Botón Izquierda (Anterior) -->
+            <button id="prevBtn" class="absolute z-20 left-4 md:left-8 top-1/2 -translate-y-1/2 p-3 bg-black/25 hover:bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <!-- Icono SVG de flecha izquierda -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+
+            <!-- Botón Derecha (Siguiente) -->
+            <button id="nextBtn" class="absolute z-20 right-4 md:right-8 top-1/2 -translate-y-1/2 p-3 bg-black/25 hover:bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <!-- Icono SVG de flecha derecha -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+        </div>
+    </section>
+    <!-- --- FIN: SECCIÓN DE GALERÍA AÑADIDA --- -->
+
+
+    <!-- Página 3: Nuevo Texto con Fade -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4">Esas pictures?</h2>
+        <p class="fade-in-text text-lg md:text-2xl" style="transition-delay: 0.8s;">
+            Luego te las mando... si te parece
+        </p>
+    </section>
+
+    <!-- Página 4: Nuevo Texto con Fade -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4"></h2>
+        <p class="fade-in-text text-lg md:text-2xl" style="transition-delay: 0.8s;">
+            Haz desbloqueado...
+        </p>
+    </section>
+
+    <!-- Página 5: Modelo 3D -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4">Un Cachetoides 3D</h2>
+
+        <!-- Visor de Modelo 3D -->
+        <model-viewer
+                src="https://crisvidalt.github.io/Pictures/cacheton3d.glb"
+                alt="Un modelo 3D de Cacheton"
+                shadow-intensity="1"
+                camera-controls
+                auto-rotate
+                touch-action="pan-y"
+                style="width: 300px; height: 400px; max-width: 80vw; border: none; background-color: transparent;"
+                class="fade-in-text"
+                style="transition-delay: 0.8s;">
+        </model-viewer>
+
+        <p class="fade-in-text text-lg md:text-2xl mt-4" style="transition-delay: 1.2s;">
+            Feliz cumpleaños a cachetoides!!🎉.
+        </p>
+    </section>
+
+
+
+
+    <!-- Página 6: Nuevo Texto con Fade (antes Página 5) -->
+    <section class="scroll-page">
+        <h2 class="fade-in-text text-4xl md:text-6xl font-bold mb-4">Mi Runner Favorita</h2>
+        <p class="fade-in-text text-lg md:text-2xl" style="transition-delay: 0.8s;">
+            Unas patitas... Aaaamaaazingggg.
+        </p>
+        <img src="https://crisvidalt.github.io/Pictures/perrito2.png">
+    </section>
+
+
+
+
+    <!-- --- INICIO: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+    <!-- ID 'writing-section' cambiado a CLASE 'writing-section' -->
+    <section class="scroll-page scroll-page-paper writing-section">
+        <!-- El 'paper-content' es el div que simula la hoja -->
+        <div class="paper-content">
+            <!-- Este es el contenedor donde se escribirá el texto -->
+            <!-- ID 'paper-text-target' cambiado a CLASE 'paper-text-target' -->
+            <p class="paper-text-target"></p>
+
+            <!--
+              Este div contiene el texto original.
+              Está oculto y se usa como fuente para el script.
+              ¡Puedes editar el texto aquí!
+            -->
+            <!-- ID 'paper-text-source' cambiado a CLASE 'paper-text-source' -->
+            <div class="paper-text-source">
+
+                Que recibas mucho cariño en tu día, que las personas que encuentres en tu camino sean dignas de tu carisma, de tu cuidado, preocupación y amistad.
+
+                Gracias por compartirme eso y mucho más.
+
+                Con mucho cariño desde el otro lado del mundo
+            </div>
+        </div>
+    </section>
+    <!-- --- FIN: NUEVA SECCIÓN MÁQUINA DE ESCRIBIR --- -->
+
+    <section class="scroll-page">
+        <img src="https://crisvidalt.github.io/Pictures/end.png">
+    </section>
+
+
+    <section class="scroll-page">
+        <img src="https://crisvidalt.github.io/Pictures/regaloperro.png">
+    </section>
+
+
+    <section class="scroll-page">
+        <img src="https://crisvidalt.github.io/Pictures/tm.png">
+    </section>
+
+
+    <!-- Espacio extra al final para que la última página suba bien -->
+    <section style="height: 50vh;"></section>
+
+</div>
+
+<!-- Script principal de Three.js (Original) --><script type="module">
+    import * as THREE from 'three';
+
+    // --- Shaders de Fuegos Artificiales (sin cambios) ---
+    const fireworksVertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = vec4(position, 1.0);
+            }
+        `;
+
+    const fireworksFragmentShader = `
+            varying vec2 vUv;
+            uniform float time;
+            uniform vec2 iResolution;
+
+            vec3 texture(vec2 pos, vec2 rocketpos){
+                float d = (pos.x-rocketpos.x)+(pos.y-rocketpos.y);
+                vec3 col=vec3(1.0);
+                d = mod(d*15.,2.0);
+                if(d>1.0){ col=vec3(0.0,0.0,1.0); }
+                return col;
+            }
+
+            vec3 rocket(vec2 pos, vec2 rocketpos){
+                vec3 col = vec3(0.0);
+                float d = distance(pos, rocketpos);
+                col = vec3(1.0, 1.0, 0.5) * smoothstep(0.015, 0.0, d);
+                return col;
+            }
+
+            float rand(float n, float seed){return fract(sin(n*seed)*43758.5453);}
+            float rand(vec2 n, float seed){return fract(sin(dot(n, vec2(12.9898, 4.1414))*seed)*43758.5453);}
+
+            float noise(float p, float seed){
+                float fl = floor(p);
+                float fc = fract(p);
+                return mix(rand(fl, seed), rand(fl + 1.0, seed), fc);
+            }
+
+            float noise(vec2 n, float seed) {
+                const vec2 d = vec2(0.0, 1.0);
+                vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));
+                return mix(mix(rand(b, seed), rand(b + d.yx, seed), f.x), mix(rand(b + d.xy, seed), rand(b + d.yy, seed), f.x), f.y);
+            }
+
+            vec3 drawParticles(vec2 pos, vec3 particolor, float partitime, vec2 partiposi, float partiangle, float partiseed, float globalseed){
+                vec3 col = vec3(0.);
+                float m = 0.;
+                float r = 0.;
+                float particleSpread = 1.0;
+                float gravity = 0.4;
+                float explosionDuration = 0.8;
+
+                for(int i=0; i<50; i++){
+                    r = rand(float(i)*partiseed, globalseed);
+
+                    // CORRECCIÓN "Caracol": Usar un 'r' diferente para el ángulo
+                    float r_angle = rand(float(i)*partiseed, globalseed * 1.2345);
+                    float angle = partiangle + (r_angle - 0.5) * 2. * 3.1415;
+
+                    vec2 particlePos = partiposi + vec2(cos(angle), sin(angle)) * partitime * r * particleSpread;
+                    particlePos.y -= gravity * partitime * partitime;
+
+                    m = smoothstep(0.012, 0.0, distance(pos, particlePos));
+
+                    float fade = smoothstep(explosionDuration, 0.0, partitime);
+                    m *= fade;
+
+                    vec3 randomColor = vec3(0.1 + r * 0.9, 0.1 + rand(r, globalseed) * 0.9, 0.1 + rand(r, globalseed * 0.5) * 0.9);
+                    vec3 mixedColor = mix(particolor, randomColor, 0.5);
+                    mixedColor *= (0.7 + r * 0.3);
+
+                    col += m*mixedColor;
+                }
+                return col;
+            }
+
+            vec3 drawFireworks(float time, vec2 uv, vec3 particolor, float seed, vec2 iResolution){
+
+                float explosionDuration = 0.8;
+                float flightDuration = 1.5;
+                float totalCycleDuration = flightDuration + explosionDuration;
+
+                vec3 col=vec3(0.0);
+                if(time<=0.){ return col; }
+
+                float cycleTime = mod(time, totalCycleDuration);
+                float firework_id = floor(time / totalCycleDuration);
+                float aspect = iResolution.x / iResolution.y;
+
+                float explosion_x = (rand(firework_id, seed) * 2.0 - 1.0) * aspect * 0.9;
+                float explosion_y = (rand(firework_id, seed * 1.234) * 1.6) - 0.8;
+                vec2 partiposi = vec2(explosion_x, explosion_y);
+                partiposi.y = clamp(partiposi.y, -0.7, 0.9);
+
+                if(cycleTime < flightDuration){
+                    float rocket_progress = cycleTime / flightDuration;
+                    vec2 rocket_start_pos = vec2(explosion_x, -1.0);
+                    vec2 rocketpos = mix(rocket_start_pos, partiposi, rocket_progress);
+                    col= rocket(uv, rocketpos);
+                } else {
+                    float explosionTime = cycleTime - flightDuration;
+                    col= drawParticles(uv, particolor, explosionTime, partiposi, 0.5, firework_id, seed);
+                }
+                return col;
+            }
+
+            void main() {
+                vec2 uv = 1.0 - 2.0 * gl_FragCoord.xy / iResolution.xy;
+                uv.x *= iResolution.x / iResolution.y;
+
+                vec3 col = vec3(0.0, 0.0, 0.05);
+
+                col += drawFireworks(time, uv,vec3(1.0,0.1,0.1), 1., iResolution); // Rojo
+                col += drawFireworks(time-.6, uv,vec3(0.1, 1.0, 0.1), 1.2, iResolution); // Verde
+                col += drawFireworks(time-0.9, uv,vec3(0.1, 0.1, 1.0), 1.9, iResolution); // Azul
+                col += drawFireworks(time-0.1, uv,vec3(1.0, 1.0, 0.1), 1.4, iResolution); // Amarillo
+                col += drawFireworks(time-1.2, uv,vec3(1.0,0.4,0.7), 1.1, iResolution); // Rosa (el original)
+                col += drawFireworks(time-1.5, uv,vec3(0.1, 1.0, 1.0), 1.6, iResolution); // Cian
+                col += drawFireworks(time-1.8, uv,vec3(1.0, 0.5, 0.1), 1.8, iResolution); // Naranja
+
+                gl_FragColor = vec4(col, 1.0);
+            }
+        `;
+
+    // --- Variables Globales de Three.js ---
+    let renderer;
+    let sceneBG, cameraBG, fireworksMaterial;
+    const clock = new THREE.Clock();
+    const canvas = document.getElementById('bg');
+
+    function init() {
+        try {
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            sceneBG = new THREE.Scene();
+            cameraBG = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+            fireworksMaterial = new THREE.ShaderMaterial({
+                vertexShader: fireworksVertexShader,
+                fragmentShader: fireworksFragmentShader,
+                uniforms: {
+                    time: { value: 0.0 },
+                    iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                },
+                transparent: true,
+                depthWrite: false
+            });
+
+            const plane = new THREE.PlaneGeometry(2, 2);
+            const quad = new THREE.Mesh(plane, fireworksMaterial);
+            sceneBG.add(quad);
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        } catch (error) {
+            console.error("Error al inicializar Three.js:", error);
+            const content = document.querySelector('.scroll-page');
+            if(content) content.innerHTML = `<h1 class='text-2xl text-red-500'>Error al cargar la animación.</h1><p class='text-lg'>Es posible que tu navegador no sea compatible o haya un problema de red.</p>`;
+        }
+    }
+
+    function onWindowResize() {
+        if (renderer && fireworksMaterial) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            // El canvas es 'fixed', por lo que siempre debe llenar la ventana
+            fireworksMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if (renderer && fireworksMaterial && sceneBG && cameraBG) {
+            const elapsedTime = clock.getElapsedTime();
+            fireworksMaterial.uniforms.time.value = elapsedTime;
+            renderer.render(sceneBG, cameraBG);
+        }
+    }
+
+    // --- Lógica de Scroll (Intersection Observer) ---
+    function setupScrollObserver() {
+        const pages = document.querySelectorAll('.scroll-page');
+
+        // Opciones: se activa cuando el 50% de la página está visible
+        const options = {
+            root: null,
+            threshold: 0.5,
+            rootMargin: "0px"
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Si entra en la pantalla, se hace visible
+                    entry.target.classList.add('visible');
+
+                    // --- INICIO: Lógica para la nueva sección de máquina de escribir ---
+                    // ID 'writing-section' cambiado a CLASE 'writing-section'
+                    if (entry.target.classList.contains('writing-section') && !entry.target.dataset.animationStarted) {
+                        entry.target.dataset.animationStarted = 'true'; // Previene que se repita
+                        // Llama a la función global que definiremos en otro script
+                        if (typeof startPaperTypewriter === 'function') {
+                            startPaperTypewriter(entry.target); // Pasa el elemento actual
+                        } else {
+                            console.error('La función startPaperTypewriter no está definida.');
+                        }
+                    }
+                    // --- FIN: Lógica para la nueva sección de máquina de escribir ---
+
+                } else {
+                    // Si sale de la pantalla, se oculta
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, options);
+
+        // Observar cada página
+        pages.forEach(page => {
+            observer.observe(page);
+        });
+    }
+
+    // Iniciar Three.js
+    init();
+
+    // Iniciar el observador de scroll
+    setupScrollObserver();
+
+</script>
+
+<!-- --- INICIO: SCRIPT NUEVA MÁQUINA DE ESCRIBIR --- -->
+<script>
+    // La función ahora acepta el elemento de la sección como argumento
+    function startPaperTypewriter(sectionElement) {
+        if (!sectionElement) {
+            console.error('No section element provided to startPaperTypewriter');
+            return;
+        }
+        // Busca los elementos fuente y destino DENTRO de la sección actual
+        const sourceEl = sectionElement.querySelector('.paper-text-source');
+        const targetEl = sectionElement.querySelector('.paper-text-target');
+
+        if (!sourceEl || !targetEl) {
+            console.error('Elementos fuente o destino para la máquina de escribir no encontrados en la sección:', sectionElement);
+            return;
+        }
+
+        const text = sourceEl.innerText || sourceEl.textContent;
+        let i = 0;
+        targetEl.innerHTML = ''; // Limpia el contenido
+
+        // Crea el cursor
+        const cursor = document.createElement('span');
+        cursor.className = 'typing-cursor';
+
+        // Añade un contenedor para el texto, para que el cursor quede al final
+        const textNode = document.createElement('span');
+        targetEl.appendChild(textNode);
+        targetEl.appendChild(cursor);
+
+        const typingSpeed = 50; // Milisegundos por caracter
+
+        const intervalId = setInterval(() => {
+            if (i < text.length) {
+                // Si es un salto de línea, reemplázalo con <br>
+                if (text.charAt(i) === '\n') {
+                    textNode.innerHTML += '<br>';
+                } else {
+                    textNode.innerHTML += text.charAt(i);
+                }
+                i++;
+
+                // Auto-scroll del "papel"
+                const paperContent = targetEl.closest('.paper-content');
+                if (paperContent) {
+                    paperContent.scrollTop = paperContent.scrollHeight;
+                }
+            } else {
+                clearInterval(intervalId);
+                // Opcional: hacer que el cursor deje de parpadear
+                cursor.style.animation = 'none';
+                cursor.style.backgroundColor = 'transparent';
+            }
+        }, typingSpeed);
+    }
+</script>
+<!-- --- FIN: SCRIPT NUEVA MÁQUINA DE ESCRIBIR --- -->
+
+<!-- --- INICIO: SCRIPT DE GALERÍA AÑADIDO --- -->
+<!-- Este es el script de index2.html, controla la lógica de la galería -->
+<script>
+    // Se usa DOMContentLoaded para asegurar que el HTML de la galería ya cargó
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // Selecciona todos los elementos con la clase 'slide'
+        // Es importante que este selector sea específico si hay otros 'slide'
+        // pero en este caso, funciona bien.
+        const gallery = document.getElementById('gallery-container');
+        if (gallery) {
+            const slides = gallery.querySelectorAll('.slide');
+            const prevBtn = gallery.querySelector('#prevBtn');
+            const nextBtn = gallery.querySelector('#nextBtn');
+
+            // Índice de la diapositiva actual
+            let currentIndex = 0;
+
+            /**
+             * Muestra la diapositiva en el índice dado y oculta las demás.
+             * @param {number} index - El índice de la diapositiva a mostrar.
+             */
+            function showSlide(index) {
+                // Recorre todas las diapositivas
+                slides.forEach((slide, i) => {
+                    // Comprueba si es el índice actual
+                    if (i === index) {
+                        // Es la diapositiva que queremos MOSTRAR
+                        slide.classList.add('opacity-100');
+                        slide.classList.remove('opacity-0'); // Nos aseguramos de que no esté oculta
+                    } else {
+                        // Es una diapositiva que queremos OCULTAR
+                        slide.classList.add('opacity-0');
+                        slide.classList.remove('opacity-100'); // Nos aseguramos de que no esté visible
+                    }
+                });
+            }
+
+            /**
+             * Cambia a la siguiente diapositiva.
+             * Vuelve al principio si está en la última.
+             */
+            function nextSlide() {
+                if (slides.length === 0) return;
+                // Calcula el nuevo índice. El '%' (módulo) asegura que vuelva a 0 al final.
+                currentIndex = (currentIndex + 1) % slides.length;
+                showSlide(currentIndex);
+            }
+
+            /**
+             * Cambia a la diapositiva anterior.
+             * Va al final si está en la primera.
+             */
+            function prevSlide() {
+                if (slides.length === 0) return;
+                // Calcula el nuevo índice.
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                showSlide(currentIndex);
+            }
+
+            // --- Asignar Eventos ---
+
+            // Clic en el botón Siguiente
+            nextBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evita que el clic se propague (si tuviéramos otros clics)
+                nextSlide();
+            });
+
+            // Clic en el botón Anterior
+            prevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                prevSlide();
+            });
+
+            // Opcional: Cambiar de foto al hacer clic en cualquier parte de la imagen
+            gallery.addEventListener('click', (e) => {
+                // Asegura que no se active al hacer clic en los botones
+                if (e.target === prevBtn || e.target === nextBtn || prevBtn.contains(e.target) || nextBtn.contains(e.target)) {
+                    return;
+                }
+                nextSlide();
+            });
+
+            // Opcional: Navegación con las teclas de flecha del teclado
+            // NOTA: Esto podría interferir con el scroll, pero lo mantenemos
+            // ya que estaba en el original.
+            document.addEventListener('keydown', (e) => {
+                // Solo activa las flechas si la galería está visible
+                if (gallery.parentElement.classList.contains('visible')) {
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault(); // Previene el scroll horizontal
+                        nextSlide();
+                    } else if (e.key === 'ArrowLeft') {
+                        e.preventDefault(); // Previene el scroll horizontal
+                        prevSlide();
+                    }
+                }
+            });
+
+            // Mostrar la primera diapositiva al cargar la página
+            showSlide(currentIndex);
+        }
+    });
+</script>
+<!-- --- FIN: SCRIPT DE GALERÍA AÑADIDO --- -->
+
+<!-- --- INICIO: SCRIPT DE MÚSICA --- -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const audio = document.getElementById('bg-music');
+        const fireworksAudio = document.getElementById('fireworks-audio'); // Audio de fuegos artificiales
+        const musicControl = document.getElementById('music-control');
+
+        if (audio && musicControl && fireworksAudio) {
+            // Ajustar volúmenes
+            audio.volume = 0.85;
+            fireworksAudio.volume = 0.70;
+
+            // 1. Lógica para el botón de Mute/Unmute (controla AMBOS)
+            musicControl.addEventListener('click', () => {
+                const isMuted = audio.muted; // Comprueba el estado de uno (ambos deberían estar igual)
+
+                if (isMuted) {
+                    // Quitar mute
+                    audio.muted = false;
+                    fireworksAudio.muted = false;
+                    musicControl.classList.remove('muted');
+
+                    // Intentar reproducir ambos si es la primera vez
+                    audio.play().catch(e => console.log("Interacción requerida para música."));
+                    fireworksAudio.play().catch(e => console.log("Interacción requerida para sonidos."));
+                } else {
+                    // Poner mute
+                    audio.muted = true;
+                    fireworksAudio.muted = true;
+                    musicControl.classList.add('muted');
+                }
+            });
+
+            // 2. Lógica para el primer Play (Autoplay-Bypass)
+            const startMusicOnFirstInteraction = () => {
+                // Intenta reproducir AMBOS
+                const playPromise1 = audio.play();
+                const playPromise2 = fireworksAudio.play();
+
+                // Manejar las promesas
+                Promise.all([playPromise1, playPromise2]).then(() => {
+                    // Éxito: Quitar mute de ambos
+                    audio.muted = false;
+                    fireworksAudio.muted = false;
+                    musicControl.classList.remove('muted');
+                }).catch(error => {
+                    // Fallo: Mantener muteados
+                    console.log("Autoplay bloqueado, se requiere clic en el botón de volumen.");
+                    audio.muted = true;
+                    fireworksAudio.muted = true;
+                    musicControl.classList.add('muted');
+                });
+            };
+
+            // Agrega el listener para la primera interacción (click)
+            // 'once: true' asegura que solo se ejecute una vez
+            document.body.addEventListener('click', startMusicOnFirstInteraction, { once: true });
+            // También para 'touchstart' por si es móvil
+            document.body.addEventListener('touchstart', startMusicOnFirstInteraction, { once: true });
+            // Y para 'keydown' por si usa el teclado primero
+            document.body.addEventListener('keydown', startMusicOnFirstInteraction, { once: true });
+        }
+    });
+</script>
+<!-- --- FIN: SCRIPT DE MÚSICA --- -->
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
